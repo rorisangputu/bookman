@@ -1,0 +1,61 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+model Organisation {
+  id            String @id @default(uuid())
+  name          String
+  email         String @unique
+  invoicePrefix String @unique
+
+  active Boolean
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+
+  members Membership[]
+}
+
+model User {
+  id       String @id @default(uuid())
+  email    String @unique
+  name     String
+  password String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  membership Membership?
+}
+
+model Membership {
+  id     String       @id @default(uuid())
+  role   MemberRole   @default(STAFF)
+  status MemberStatus @default(PENDING)
+
+  userId         String @unique
+  organisationId String
+
+  user         User         @relation(fields: [userId], references: [id], onDelete: Restrict)
+  organisation Organisation @relation(fields: [organisationId], references: [id], onDelete: Restrict)
+}
+
+enum MemberRole {
+  OWNER
+  STAFF
+}
+
+enum MemberStatus {
+  PENDING
+  ACCEPTED
+  REMOVED
+}
